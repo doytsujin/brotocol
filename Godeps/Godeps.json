@@ -1,0 +1,10 @@
+{
+	"ImportPath": "github.com/volker48/brotocol",
+	"GoVersion": "go1.4.2",
+	"Deps": [
+		{
+			"ImportPath": "github.com/kisom/aescrypt/secretbox",
+			"Rev": "e3e8507dea73ab7433dc1071da37b551217edbae"
+		}
+	]
+}
