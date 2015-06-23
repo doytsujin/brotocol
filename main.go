@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"errors"
+	"github.com/kisom/aescrypt/secretbox"
 )
 
 const UpAndMulticast = (net.FlagUp | net.FlagMulticast)
@@ -108,7 +109,12 @@ func (r *room) sendLoop(user string) {
 		if err != nil {
 			log.Fatal("Error encoding: ", err)
 		}
-		_, err = conn.WriteToUDP(b, addr)
+		box, ok := secretbox.Seal(b, []byte("$1HLK#5qAFlEH$4TM5W*TSM18&dW5zFh8f7TujH7#RobIgIn"))
+		if !ok {
+			log.Println("Couldn't encrypt message. It wasn't sent.")
+			continue
+		}
+		_, err = conn.WriteToUDP(box, addr)
 		if err != nil {
 			log.Printf("Error sending data: %s", err)
 		}
@@ -137,7 +143,12 @@ func (r *room) listenLoop() {
 			log.Println("Error reading message: ", err)
 		}
 		var msg Message
-		json.Unmarshal(payload[:n], &msg)
+		jsonMsg, ok := secretbox.Open(payload[:n], []byte("$1HLK#5qAFlEH$4TM5W*TSM18&dW5zFh8f7TujH7#RobIgIn"))
+		if !ok {
+			log.Println("Couldn't decrypt message")
+			continue
+		}
+		json.Unmarshal(jsonMsg, &msg)
 		r.incoming <- msg
 	}
 }
