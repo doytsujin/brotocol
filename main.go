@@ -11,7 +11,10 @@ import (
 	"github.com/kisom/aescrypt/secretbox"
 )
 
-const UpAndMulticast = (net.FlagUp | net.FlagMulticast)
+const (
+	UpAndMulticast = (net.FlagUp | net.FlagMulticast)
+	Secret = "$1HLK#5qAFlEH$4TM5W*TSM18&dW5zFh8f7TujH7#RobIgIn"
+)
 var BrotocolGroup *net.UDPAddr = &net.UDPAddr{IP: []byte{225,0,0,1}, Port: 12345}
 
 type Message struct {
@@ -105,7 +108,7 @@ func (r *room) sendLoop(user string) {
 		if err != nil {
 			log.Fatal("Error encoding: ", err)
 		}
-		box, ok := secretbox.Seal(b, []byte("$1HLK#5qAFlEH$4TM5W*TSM18&dW5zFh8f7TujH7#RobIgIn"))
+		box, ok := secretbox.Seal(b, []byte(Secret))
 		if !ok {
 			log.Println("Couldn't encrypt message. It wasn't sent.")
 			continue
@@ -135,7 +138,7 @@ func (r *room) listenLoop() {
 			log.Println("Error reading message: ", err)
 		}
 		var msg Message
-		jsonMsg, ok := secretbox.Open(payload[:n], []byte("$1HLK#5qAFlEH$4TM5W*TSM18&dW5zFh8f7TujH7#RobIgIn"))
+		jsonMsg, ok := secretbox.Open(payload[:n], []byte(Secret))
 		if !ok {
 			log.Println("Couldn't decrypt message")
 			continue
