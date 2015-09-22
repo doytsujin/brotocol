@@ -12,7 +12,7 @@ import (
 )
 
 const UpAndMulticast = (net.FlagUp | net.FlagMulticast)
-const BrotocolGroup = "225.0.0.1:12345"
+var BrotocolGroup *net.UDPAddr = &net.UDPAddr{IP: []byte{225,0,0,1}, Port: 12345}
 
 type Message struct {
 	Sender, Body string
@@ -94,11 +94,7 @@ func inputListener(userInput chan string) {
 }
 
 func (r *room) sendLoop(user string) {
-	addr, err := net.ResolveUDPAddr("udp4", BrotocolGroup)
-	if err != nil {
-		log.Fatal("Error resolving UDP addr: ", err)
-	}
-	conn, err := net.ListenUDP("udp4", addr)
+	conn, err := net.ListenUDP("udp4", BrotocolGroup)
 	if err != nil {
 		log.Fatal("Error listening UDP: ", err)
 	}
@@ -114,7 +110,7 @@ func (r *room) sendLoop(user string) {
 			log.Println("Couldn't encrypt message. It wasn't sent.")
 			continue
 		}
-		_, err = conn.WriteToUDP(box, addr)
+		_, err = conn.WriteToUDP(box, BrotocolGroup)
 		if err != nil {
 			log.Printf("Error sending data: %s", err)
 		}
@@ -127,11 +123,7 @@ func (r *room) listenLoop() {
 	if err != nil {
 		log.Fatal("Error obtaining multicast interface: ", err)
 	}
-	addr, err := net.ResolveUDPAddr("udp4", BrotocolGroup)
-	if err != nil {
-		log.Fatal("Error from resolve UDP addr: ", err)
-	}
-	conn, err := net.ListenMulticastUDP("udp4", ifi, addr)
+	conn, err := net.ListenMulticastUDP("udp4", ifi, BrotocolGroup)
 	if err != nil {
 		log.Fatal(err)
 	}
